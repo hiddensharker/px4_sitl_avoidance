@@ -233,6 +233,7 @@ class PX4Controller:
     def enter_offboard(self, pre_send_count: int = 40):
         pos = self.wait_position()
         x, y = pos["x"], pos["y"]
+        z = pos["z"]                          # ← 新增：取当前高度
 
         print("[PX4] 预发送 Offboard setpoint...")
         for _ in range(pre_send_count):
@@ -250,11 +251,11 @@ class PX4Controller:
             0, 0, 0, 0, 0,
         )
         for _ in range(20):
-            self._send_position_ned(x, y, -2.0)
+            self._send_position_ned(x, y, z)
             time.sleep(_DT)
 
         self._offboard_active = True
-        self._start_watchdog(x, y, -2.0, mode="position")
+        self._start_watchdog(x, y, z, mode="position")
         print("[PX4] 已进入 Offboard 模式")
 
     def exit_offboard(self):
@@ -473,43 +474,3 @@ class PX4Controller:
         self._watchdog_thread = threading.Thread(target=_loop, daemon=True)
         self._watchdog_thread.start()
         print("[PX4] Offboard watchdog 已启动")
-
-
-# ======================================================================
-# 独立运行测试
-# ======================================================================
-if __name__ == "__main__":
-
-    ctrl = PX4Controller()
-    ctrl.connect()
-    ctrl.fetch_mission()
-
-    def _print_pose():
-        while True:
-            pos = ctrl.get_position()
-            att = ctrl.get_attitude()
-            wp  = ctrl.get_current_waypoint_ned()
-            if pos["x"] is None or att["yaw"] is None:
-                print("[WAIT] 等待位姿数据...")
-            else:
-                print(
-                    f"[POS] x={pos['x']:7.3f}  y={pos['y']:7.3f}  z={pos['z']:7.3f} m  "
-                    f"yaw={math.degrees(att['yaw']):6.1f}°  |  "
-                    f"WP x={wp['x']}  y={wp['y']}  z={wp['z']}"
-                )
-            time.sleep(0.2)
-
-    threading.Thread(target=_print_pose, daemon=True).start()
-
-    ctrl.arm()
-    ctrl.enter_offboard()
-    ctrl.takeoff(height_m=2.0, wait=8.0)
-    ctrl.hover(duration=5.0)
-
-    print("[INFO] 最终悬停，Ctrl+C 退出")
-    try:
-        while True:
-            ctrl.send_velocity(0.0, 0.0, 0.0)
-            time.sleep(_DT)
-    except KeyboardInterrupt:
-        ctrl.close()
