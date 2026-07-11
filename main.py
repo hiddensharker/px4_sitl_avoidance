@@ -12,34 +12,8 @@ import numpy as np
 from airsim_lidar import LidarReader
 from px4_mavlink   import PX4Controller, _DT
 from vfh           import VFHMap
-
-# ======================================================================
-# 配置参数
-# ======================================================================
-CONTROL_HZ      = 10
-CONTROL_DT      = 1.0 / CONTROL_HZ
-
-TRIGGER_DIST_M  = 5.0
-MAX_SPEED_MPS   = 2.0
-LIDAR_RANGE_M   = 10.0
-
-
-# ======================================================================
-# 坐标变换工具
-# ======================================================================
-def ned_to_body(vec_ned: np.ndarray, roll: float, pitch: float, yaw: float) -> np.ndarray:
-    cr, sr = math.cos(roll),  math.sin(roll)
-    cp, sp = math.cos(pitch), math.sin(pitch)
-    cy, sy = math.cos(yaw),   math.sin(yaw)
-
-    R = np.array([
-        [ cp*cy,          cp*sy,         -sp    ],
-        [ sr*sp*cy-cr*sy, sr*sp*sy+cr*cy, sr*cp ],
-        [ cr*sp*cy+sr*sy, cr*sp*sy-sr*cy, cr*cp ],
-    ], dtype=np.float64)
-
-    return R @ np.array(vec_ned, dtype=np.float64)
-
+from utils    import ned_to_body
+from config import CONTROL_HZ, CONTROL_DT, TRIGGER_DIST_M, MAX_SPEED_MPS, LIDAR_RANGE_M
 
 # ======================================================================
 # 状态打印线程

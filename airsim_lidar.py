@@ -76,21 +76,4 @@ class LidarReader:
         print(f"        X: [{pts[:, 0].min():.2f}, {pts[:, 0].max():.2f}]")
         print(f"        Y: [{pts[:, 1].min():.2f}, {pts[:, 1].max():.2f}]")
         print(f"        Z: [{pts[:, 2].min():.2f}, {pts[:, 2].max():.2f}]")
-
-
-# ------------------------------------------------------------------
-# 独立运行测试
-# ------------------------------------------------------------------
-if __name__ == "__main__":
-    import time
-
-    lidar = LidarReader()
-    print("[INFO] 开始读取点云，Ctrl+C 退出\n")
-    try:
-        while True:
-            ts, pts = lidar.get_points_with_timestamp()
-            print(f"[帧] ts={ts}")
-            lidar.print_summary(pts)
-            time.sleep(0.5)
-    except KeyboardInterrupt:
-        print("\n[STOP] 退出")
+        

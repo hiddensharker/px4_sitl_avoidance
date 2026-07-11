@@ -20,20 +20,15 @@ vfh.py — 三维 VFH 球面直方图
 import math
 import numpy as np
 
-
+from config import (
+    TRIGGER_DIST_M, EXCLUDE_DIST_M, LIDAR_RANGE_M,
+    MAX_SPEED_MPS, AZ_RES_DEG, EL_RES_DEG, NEIGHBOR_RING,
+)
 # ======================================================================
 # 常量
 # ======================================================================
-AZ_RES_DEG     = 10                       # 方位角分辨率（度）
-EL_RES_DEG     = 10                       # 仰角分辨率（度）
 AZ_BINS        = 360 // AZ_RES_DEG       # 36
 EL_BINS        = 180 // EL_RES_DEG       # 18
-TRIGGER_DIST_M = 5.0                      # 触发避障的距离阈值（m）
-EXCLUDE_DIST_M = 2.0                      # 方向选择时排除格子的距离阈值（m）
-LIDAR_RANGE_M  = 10.0                     # LiDAR 最大量程（m）
-MAX_SPEED_MPS  = 2                     # 避障最大速度（m/s）
-NEIGHBOR_RING  = 1                        # 邻域圈数（1 = 3×3）
-
 
 # ======================================================================
 # VFHMap
@@ -311,26 +306,3 @@ class VFHMap:
                   f"平均距离={finite.mean():.2f}m")
         print(f"      触发避障: {'是' if self.is_obstacle_near() else '否'} "
               f"（阈值={self.trigger_dist}m）")
-
-
-# ======================================================================
-# 独立运行测试
-# ======================================================================
-if __name__ == "__main__":
-    import sys
-    sys.path.insert(0, ".")
-    from airsim_lidar import LidarReader
-    import time
-
-    lidar = LidarReader()
-    vfh   = VFHMap()
-
-    print("[INFO] 开始构建球面直方图，Ctrl+C 退出\n")
-    try:
-        while True:
-            pts = lidar.get_points()
-            vfh.build(pts)
-            vfh.print_summary()
-            time.sleep(0.5)
-    except KeyboardInterrupt:
-        print("\n[STOP] 退出")
